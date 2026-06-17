@@ -52,10 +52,17 @@ public class SneakerService {
     return sneakerRepository.save(sneaker); //create sneaker
 }
 
-    public Sneaker updatePrice(long id, double price){
-    Sneaker sneaker = byId(id);
-    sneaker.setPrice(price);
-    return sneakerRepository.save(sneaker);
+    public Sneaker updateSneaker(long id, Sneaker updated){
+
+        Sneaker existing = byId(id);
+        if (existing == null) //search if id exist and if null return null to controller
+            return  null;
+        existing.setModel(updated.getModel());
+        existing.setReleaseYear(updated.getReleaseYear());
+        existing.setPrice(updated.getPrice());
+        existing.setBrand(resolveBrand(updated));
+        //already has id so it treats it as a update
+        return sneakerRepository.save(updated);
     }
 
     public void deleteSneaker(long id){
