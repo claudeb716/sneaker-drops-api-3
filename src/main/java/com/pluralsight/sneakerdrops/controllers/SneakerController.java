@@ -2,6 +2,8 @@ package com.pluralsight.sneakerdrops.controllers;
 
 import com.pluralsight.sneakerdrops.models.Sneaker;
 import com.pluralsight.sneakerdrops.service.SneakerService;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -35,5 +37,12 @@ public class SneakerController {
     @GetMapping("/{id}")
     public Sneaker getById(@PathVariable long id){
         return sneakerService.byId(id);
+    }
+
+    //return status coded and object
+    @PostMapping
+    public ResponseEntity<Sneaker> create(@RequestBody Sneaker sneaker){
+        Sneaker saved =sneakerService.createSneaker(sneaker);
+        return ResponseEntity.status(HttpStatus.CREATED).body(saved); //.status() , .body()
     }
 }

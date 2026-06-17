@@ -5,14 +5,11 @@ import com.pluralsight.sneakerdrops.data.SneakerRepository;
 import com.pluralsight.sneakerdrops.models.Brand;
 import com.pluralsight.sneakerdrops.models.Sneaker;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
-
-import static java.util.Collections.sort;
 
 
 // (A Bean that holds business logic)
@@ -28,24 +25,10 @@ public class SneakerService {
         this.brandRepository = brandRepository;
     }
 
-//    public List<Sneaker> allSneakers(){
-//    return sneakerRepository.findAll();
-//    }
-//    public List<Sneaker> byModel(String model){
-//    return sneakerRepository.findByModelContaining(model);
-//    }
-//    public List<Sneaker> byMaxPrice(double price){
-//    return sneakerRepository.findByPriceLessThan(price);
-//    }
-//    public List<Sneaker> byYear(int year){
-//    return sneakerRepository.findByReleaseYear(year);
-//    }
-//    public List<Sneaker> customSearch(double maxPrice, int minYear){
-//    return sneakerRepository.search(maxPrice, minYear);
-//    }
     public Sneaker byId(long id){
     return sneakerRepository.findById(id).orElse(null);
     }
+
     public List<Sneaker> search(Integer year,String model,String brand, Double minPrice, Double maxPrice, String sort){
     List<Sneaker> results = new ArrayList<>(sneakerRepository.findAll().stream()
             .filter(sneaker -> year == null || sneaker.getReleaseYear() == year)
@@ -62,22 +45,26 @@ public class SneakerService {
     }
     return results;
     }
-    public Sneaker addSneaker(String model, double price, int year, long brandId) {
-    Brand brand = brandRepository.findById(brandId)
-            .orElseThrow(() -> new NotFoundException("No Brand with id " + brandId));
-    return sneakerRepository.save(new Sneaker(model,price,year,brand));
+
+    public Sneaker createSneaker(Sneaker sneaker) {
+    sneaker.setId(null); // creating id
+        sneaker.setBrand(resolveBrand(sneaker)); //resolve the brand(user only provided the id)
+    return sneakerRepository.save(sneaker); //create sneaker
 }
+
     public Sneaker updatePrice(long id, double price){
     Sneaker sneaker = byId(id);
     sneaker.setPrice(price);
     return sneakerRepository.save(sneaker);
     }
+
     public void deleteSneaker(long id){
     if (!sneakerRepository.existsById(id)){
         throw new NotFoundException("No Sneaker with ID " + id);
     }
     sneakerRepository.deleteById(id);
     }
+
     public void seedIfEmpty(){
         if (sneakerRepository.count() > 0) {
             return;
@@ -96,6 +83,12 @@ public class SneakerService {
         sneakerRepository.save(new Sneaker("Men's 574", 74.99, 1988, newBalance ));
         sneakerRepository.save(new Sneaker(" Chuck Taylor All-Star", 65.00, 1917,converse));
 
+    }
+    //helper
+    private Brand resolveBrand(Sneaker sneaker){
+    if (sneaker.getBrand() == null || sneaker.getBrand().getId() == null) //if we dont have a brand or id or brand app will crash so return null
+        return null;
+    return brandRepository.findById(sneaker.getBrand().getId()).orElse(null);
     }
 
 }
